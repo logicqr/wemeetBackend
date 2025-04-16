@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Company {
+  companyId   String   @id @default(uuid())
+  companyName String
+  users       User[]
+}
+
+model User {
+  userId     String   @id @default(uuid())
+  userName   String
+  email      String   @unique
+  position   String
+  role       Role
+  companyId  String
+  company    Company  @relation(fields: [companyId], references: [companyId])
+  meetings   Meeting[]           
+  participations MeetingParticipant[]
+  attendance Attendance[]
+  leaveRequests LeaveRequest[]
+  reports    DailyReport[]
+}
+
+model Meeting {
+  meetingId   String   @id @default(uuid())
+  title       String
+  description String?
+  scheduledAt String
+  link        String
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [userId])
+  participant MeetingParticipant[]
+}
+
+model MeetingParticipant {
+  id        String   @id @default(uuid())
+  meetingId String
+  userId    String
+  meeting   Meeting  @relation(fields: [meetingId], references: [meetingId])
+  user      User     @relation(fields: [userId], references: [userId])
+}
+
+model Attendance {
+  attendanceId String   @id @default(uuid())
+  userId       String
+  date         DateTime
+  checkIn      DateTime?
+  checkOut     DateTime?
+  latitude     Float?       // Latitude coordinate
+  longitude    Float?       // Longitude coordinate
+  status       String        // PRESENT | ABSENT | ON_LEAVE | LATE
+  user         User          @relation(fields: [userId], references: [userId])
+}
+
+model LeaveRequest {
+  leaveId     String      @id @default(uuid())
+  userId      String
+  startDate   DateTime
+  endDate     DateTime
+  reason      String
+  status      LeaveStatus @default(PENDING)
+  approvedBy  String?  
+  createdAt   DateTime    @default(now())
+  user        User        @relation(fields: [userId], references: [userId])
+}
+
+model DailyReport {
+  reportId    String   @id @default(uuid())
+  userId      String
+  date        DateTime
+  workDetails String
+  checkOut    DateTime?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [userId])
+}
