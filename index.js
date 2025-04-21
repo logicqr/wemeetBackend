@@ -453,8 +453,8 @@ app.post('/leave-request', async (req, res) => {
     const leave = await prisma.leaveRequest.create({
       data: {
         userId:data.userId,
-        startDate: data.startDate,
-        endDate: data.endDate,
+        startDate: new Date(data.startDate),
+endDate: new Date(data.endDate),
         reason:data.reason,
       },
     });
