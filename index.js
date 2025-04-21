@@ -448,6 +448,7 @@ app.post('/attendance/status', async (req, res) => {
 // Leave Request
 app.post('/leave-request', async (req, res) => {
   const data = req.body;
+  console.log(data)
   try {
     const leave = await prisma.leaveRequest.create({
       data: {
