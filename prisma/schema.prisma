@@ -15,6 +15,13 @@ datasource db {
 enum Role {
   ADMIN
   STAFF
+  SUPER_ADMIN
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PRO
+  ENTERPRISE
 }
 
 enum LeaveStatus {
@@ -23,10 +30,23 @@ enum LeaveStatus {
   REJECTED
 }
 
+model TempRegistration {
+  tempId          String   @id @default(uuid())
+  companyName String
+  userName    String
+  email       String   @unique
+  password    String
+  position    String
+  orderId     String
+  createdAt   DateTime @default(now())
+}
+
 model Company {
   companyId   String   @id @default(uuid())
   companyName String
   users       User[]
+  subscription  Subscription?
+  createdAt   DateTime @default(now())
 }
 
 model User {
@@ -34,6 +54,7 @@ model User {
   userName   String
   email      String   @unique
   position   String
+  password   String
   role       Role
   companyId  String
   company    Company  @relation(fields: [companyId], references: [companyId])
@@ -42,6 +63,11 @@ model User {
   attendance Attendance[]
   leaveRequests LeaveRequest[]
   reports    DailyReport[]
+}
+
+model Token {
+  token_id String @unique @id @default(cuid())
+  refreshToken String
 }
 
 model Meeting {
@@ -66,7 +92,7 @@ model MeetingParticipant {
 
 model Attendance {
   attendanceId String   @id @default(uuid())
-  userId       String
+  userId       String   
   date         DateTime
   checkIn      DateTime?
   checkOut     DateTime?
@@ -79,8 +105,8 @@ model Attendance {
 model LeaveRequest {
   leaveId     String      @id @default(uuid())
   userId      String
-  startDate   DateTime
-  endDate     DateTime
+  startDate   String
+  endDate     String
   reason      String
   status      LeaveStatus @default(PENDING)
   approvedBy  String?  
@@ -96,4 +122,32 @@ model DailyReport {
   checkOut    DateTime?
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [userId])
+}
+
+model Subscription {
+  id               String            @id @default(uuid())
+  plan             SubscriptionPlan
+  price            Int               // Original price in paisa
+  discountedPrice  Int?              // After coupon, if any
+  couponCode       String?           // Optional coupon
+  isActive         Boolean           @default(true)
+  subscribedAt     DateTime          @default(now())
+  company          Company           @relation(fields: [companyId], references: [companyId])
+  companyId        String            @unique
+}
+
+model Coupon {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  discount   Int      // Percentage (e.g., 20 means 20%)
+  isActive   Boolean  @default(true)
+  expiresAt  DateTime?
+  createdAt  DateTime @default(now())
+}
+
+model Plans {
+  plan_id        String           @id @default(uuid())
+  plan     SubscriptionPlan @unique
+  price     Int          
+  updatedAt DateTime         @updatedAt
 }
