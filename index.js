@@ -8,12 +8,12 @@ const prisma = new PrismaClient()
 app.use(express.json())
 var jwt = require('jsonwebtoken');
 
-app.post("/plans",async(req,res)=>{
+app.post("/plans", async (req, res) => {
   const data = req.body;
   const createPlan = await prisma.plans.create({
-    data:{
-      plan:data.plan,
-      price:data.price
+    data: {
+      plan: data.plan,
+      price: data.price
     }
   })
   res.json({
@@ -21,7 +21,7 @@ app.post("/plans",async(req,res)=>{
   })
 })
 
-app.get("/plans",async(req,res)=>{
+app.get("/plans", async (req, res) => {
   const allPlans = await prisma.plans.findMany()
   res.json(allPlans)
 })
@@ -130,7 +130,7 @@ app.get("/plans",async(req,res)=>{
 //       res.json({
 //         companySuperAdmin
 //       })
-  
+
 //   case "payment.failed": {
 //     console.log("❌ Payment Failed:", event.payload.payment.entity);
 //     return res.status(200).json({ message: "Payment failed event logged" });
@@ -145,7 +145,7 @@ app.get("/plans",async(req,res)=>{
 //   return res.status(500).json({ message: "Internal server error" });
 // }})
 
-app.post("/super-admin",async(req,res)=>{
+app.post("/super-admin", async (req, res) => {
   const data = req.body;
 
   const companyRegister = await prisma.company.create({
@@ -208,53 +208,53 @@ app.post("/login", async (req, res) => {
     return res.status(400).json({ message: "Invalid username or password" });
   }
 
-  const accessToken = jwt.sign({ userId: isExistingUser.userId, role:isExistingUser.role },
-     'wemeet',
-     {expiresIn:"1h"});
+  const accessToken = jwt.sign({ userId: isExistingUser.userId, role: isExistingUser.role },
+    'wemeet',
+    { expiresIn: "1h" });
 
-  const refreshToken = jwt.sign({ userId: isExistingUser.userId, role:isExistingUser.role },
-        'wemeet',
-        {expiresIn:"30d"});
+  const refreshToken = jwt.sign({ userId: isExistingUser.userId, role: isExistingUser.role },
+    'wemeet',
+    { expiresIn: "30d" });
 
-        await prisma.token.create({
-          data:{
-            refreshToken:refreshToken
-          }
-        })
+  await prisma.token.create({
+    data: {
+      refreshToken: refreshToken
+    }
+  })
 
 
   return res.status(200).json({
     message: "Successfully logged in",
-    token:{
+    token: {
       accessToken,
       refreshToken
     }
   });
 })
 
-app.post('/refresh',async(req,res)=>{
+app.post('/refresh', async (req, res) => {
   const data = req.body;
   const tokenValid = await prisma.token.findFirst({
-    where:{
-      refreshToken:data.refreshToken
+    where: {
+      refreshToken: data.refreshToken
     }
   })
-  if(tokenValid){
-    jwt.verify(token, 'wemeet', function(err,decoded) {
-      if(!err){
-        const accessToken = jwt.sign({ userId: tokenValid.userId, role:decoded.role },
+  if (tokenValid) {
+    jwt.verify(token, 'wemeet', function (err, decoded) {
+      if (!err) {
+        const accessToken = jwt.sign({ userId: tokenValid.userId, role: decoded.role },
           'wemeet',
-          {expiresIn:"1h"});
-          res.json({accessToken})
-      }else{
+          { expiresIn: "1h" });
+        res.json({ accessToken })
+      } else {
         res.json({
-            message: "User Not Authenticated"
+          message: "User Not Authenticated"
         })
       }
     });
-  }else{
+  } else {
     res.json({
-      message:"Token Not Found"
+      message: "Token Not Found"
     })
   }
 })
@@ -447,14 +447,14 @@ app.post('/attendance/status', async (req, res) => {
 
 // Leave Request
 app.post('/leave-request', async (req, res) => {
-  const data = req.body;
-  console.log(data)
+  const data = req.body
+
   try {
     const leave = await prisma.leaveRequest.create({
       data: {
         userId:data.userId,
         startDate: new Date(data.startDate),
-endDate: new Date(data.endDate),
+        endDate: new Date(data.endDate),
         reason:data.reason,
       },
     });
@@ -481,14 +481,14 @@ app.post('/leave-status', async (req, res) => {
   }
 });
 
-app.post('/leave',async(req,res)=>{
+app.post('/leave', async (req, res) => {
   const data = req.body;
   const leaveReport = await prisma.leaveRequest.findFirst({
-      where:{
-        userId:data.userId
-      }
+    where: {
+      userId: data.userId
+    }
   })
-  res.json({leaveReport})
+  res.json({ leaveReport })
 })
 
 app.post('/report', async (req, res) => {
