@@ -448,13 +448,17 @@ app.post('/attendance/status', async (req, res) => {
 // Leave Request
 app.post('/leave-request', async (req, res) => {
   const data = req.body
+  console.log(data.userId)
+  console.log(data.startDate)
+  console.log(data.endDate)
+  console.log(data.reason)
 
   try {
     const leave = await prisma.leaveRequest.create({
       data: {
         userId:data.userId,
-        startDate: new Date(data.startDate),
-        endDate: new Date(data.endDate),
+        startDate: data.startDate,
+        endDate: data.endDate,
         reason:data.reason,
       },
     });
